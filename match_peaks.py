@@ -50,8 +50,8 @@ def greedy_peak_matching(spec_a, spec_b, tolerance_ppm):
     pairs, scores = compute_pair_scores(mz_a, mz_b, int_a, int_b, tolerance_ppm)
     
     # Initialize combined spectrum with all spec_a peaks (unmatched have int_b=0)
-    combined_spec = [(mz_a[i], int_a[i], 0.0) for i in range(len(mz_a))]
-    matched_b = set() 
+    combined_spec = [(int_a[i], 0.0) for i in range(len(mz_a))]
+    matched_b = set()
     
     if len(pairs) > 0:
         sort_indices = np.argsort(-scores)
@@ -60,19 +60,19 @@ def greedy_peak_matching(spec_a, spec_b, tolerance_ppm):
         used_a = set()
         for i, j in pairs:
             if i not in used_a and j not in matched_b:
-                combined_spec[i] = (mz_a[i], int_a[i], int_b[j])
+                combined_spec[i] = (int_a[i], int_b[j])
                 used_a.add(i)
                 matched_b.add(j)
     
     # Add unmatched spec_b peaks w no spec_a match
     for j in range(len(mz_b)):
         if j not in matched_b:
-            combined_spec.append((mz_b[j], 0.0, int_b[j]))
+            combined_spec.append((0.0, int_b[j]))
     
-    # Sort by m/z
-    combined_spec.sort(key=lambda x: x[0])
+    intensities_a = [a for a, b in combined_spec]
+    intensities_b = [b for a, b in combined_spec]
     
-    return combined_spec
+    return intensities_a, intensities_b
 
 
 
@@ -86,17 +86,15 @@ if __name__ == "__main__":
     
     tolerance_ppm = 10.0 
     
-    for i in range(len(data)):
-        for j in range(i + 1, len(data)):
+    for i in range(5):
+        for j in range(i + 1, 5):
             spec_a = data[i]['spectrum']
             spec_b = data[j]['spectrum']
             print(f"\nMatching spectrum {i} with spectrum {j}")
             try:
-                combined_spec = greedy_peak_matching(spec_a, spec_b, tolerance_ppm=tolerance_ppm)
-                print(f"matched peaks in combined spectrum (mz, int_a, int_b):")
-                for mz, int_a, int_b in combined_spec:
-                    if int_a > 0.0 and int_b > 0.0:
-                        print(f"m/z={mz:.4f}, int_a={int_a:.4f}, int_b={int_b:.4f}")
+                spec_a, spec_b = greedy_peak_matching(spec_a, spec_b, tolerance_ppm=tolerance_ppm)
+                print(f"spec_a: {spec_a[:5]}\nspec_b: {spec_b[:5]}")
+                        
             except Exception as e:
                 print(f"Error matching spectra {i} and {j}: {e}")
 
