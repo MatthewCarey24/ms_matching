@@ -7,6 +7,18 @@ import pandas as pd
 
 @njit
 def compute_pair_scores(mz_a, mz_b, int_a, int_b, tolerance, use_ppm):
+    """
+    rank the associaton of matched peaks
+    
+    Args:
+        mz_a, mz_b: Lists of mz for 2 spectra
+        int_a, int_b: Lists of intensities for 2 spectra 
+        tolerance: Maximum m/z difference 
+        use_ppm: flag that tells whether to use ppm or not (da if not)
+    Returns:
+        pairs: list of (i,j) tuples where mz_a[i] and mz_b[j] are within the tolerance window
+        scores: list of real numbers from (0,1] where scores[i] is the score of the pair in pairs[i]
+    """
     # shape things up for numba
     max_pairs = len(mz_a) * len(mz_b)
     pairs = np.zeros((max_pairs, 2), dtype=np.int32)
@@ -38,7 +50,7 @@ def greedy_peak_matching_ppm(spec_a, spec_b, tolerance):
         spec_a, spec_b: Lists of [mz, intensity] pairs 
         tolerance: Maximum m/z difference in parts per million 
     Returns:
-        matched_spec: List of (mz, int_a, int_b) tuples, with intensity = 0 for unmatched peaks.
+        intensities_a, intensities_b: List of peak intensities where intensities_a[i] is matched to intensities_b[i]
     """
     # Convert spectra to NumPy arrays for Numba
     spec_a = np.array(spec_a, dtype=np.float64)
@@ -76,13 +88,13 @@ def greedy_peak_matching_ppm(spec_a, spec_b, tolerance):
 
 def greedy_peak_matching_da(spec_a, spec_b, tolerance):
     """
-    Perform greedy peak matching between two spectra using ppm tolerance
+    Perform greedy peak matching between two spectra using explicit da tolerance
     
     Args:
         spec_a, spec_b: Lists of [mz, intensity] pairs 
-        tolerance: Maximum m/z difference in parts per million 
+        tolerance: Maximum m/z difference in da
     Returns:
-        matched_spec: List of (mz, int_a, int_b) tuples, with intensity = 0 for unmatched peaks.
+        intensities_a, intensities_b: List of peak intensities where intensities_a[i] is matched to intensities_b[i]
     """
     # Convert spectra to NumPy arrays for Numba
     spec_a = np.array(spec_a, dtype=np.float64)
@@ -136,7 +148,7 @@ if __name__ == "__main__":
             print(f"\nMatching spectrum {i} with spectrum {j}")
             try:
                 spec_a, spec_b = greedy_peak_matching_ppm(spec_a, spec_b, tolerance=tolerance)
-                print(f"spec_a: {spec_a[:5]}\nspec_b: {spec_b[:5]}")
+                print(f"spec_a: {spec_a[:10]}\nspec_b: {spec_b[:10]}")
                         
             except Exception as e:
                 print(f"Error matching spectra {i} and {j}: {e}")
