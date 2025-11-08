@@ -1,2 +1,5 @@
 *.pkl
 tool.py
+energy_prediction/data/
+energy_prediction/images/
+energy_prediction/models/

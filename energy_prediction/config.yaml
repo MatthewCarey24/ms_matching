@@ -1,0 +1,11 @@
+file_path: "data/metlin.pkl"
+target_ce: 20
+mz_min: 50
+mz_max: 650
+max_ce: 40
+bin_size: 0.1
+batch_size: 64
+epochs: 30
+lr: 0.001
+model_path: "models/spec_to_20ev_model.pth"
+seed: 42
